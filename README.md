@@ -1,7 +1,7 @@
 # Virtual-Device-Driver
 
 # Overview
-This project coveres **debugfs, kobjects, spinlocks, mutexes, and misc char devices** to write kernel module called **swapper.**
+This project covered **debugfs, kobjects, spinlocks, mutexes, and misc char devices** to write kernel module called **swapper.**
 
 The swapper module attempts to emulate the behavior of a simple, yet somewhat strange,
 piece of hardware that supports reading and writing to the multiple drives it manages. These
@@ -30,3 +30,20 @@ debugfs will have this attribute set to **1** upon creation. The only swapstore 
 have this set to **0** is the **"default"** swapstore. This is a permanent swapstore that is
 built into the hardware, so it can't be ejected. It is created when the swapper module
 is loaded and only gets destroyed when the swapper module is unloaded.
+
+# Implementation
+## Step 1 - Build the swapstore object
+A swapstore looks like this: <br />
+```c
+struct swapstore {
+  struct kobject kobj;
+  char data[PAGE_SIZE];
+  int readonly;
+  int removable;
+};
+```
+First building **kobj_type** that exposes the members **removable** and **readonly** as attributes to userspace first. All swapstore objects should belong to a **kset** that shows up in userspace at: **/sys/kernel/swapstore/** <br />
+
+Create a few swapstores in your init function and make sure you can see them in sysfs under the **kset**. Test them, make sure you can read and write values to them, as appropriate. <br />
+Remember, you should only be able to read from **removable** attribute, and wrritng to it should produce **-EPERM**. Also, make sure that writing anything other than **0** and **1** to the **readonly** attribute produces **-EINVAL** before continuing. Only the **root** user should be able to access these attributes.
+
