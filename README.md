@@ -64,3 +64,10 @@ In this directory, you will add three (3) files: <br />
   * **eject** - (writeable by root only) <br />
       Writing a **name** to this file will result in the corresponding swapstore being queued for ejection. If the swapstore is not currently attached to **/dev/swapper**, it will be removed from the system immediately, generating a corresponding removal uevent. <br />
       However, if the swapstore is currently attached to **/dev/swapper** it will instead be removed immediately after becoming detached from **/dev/swapper**, again generating the appropriate removal uevent. If **name** does not correspond to an existing swapstore, **-EINVAL** should be produced.
+
+## Step 3 - Add the misc device /dev/swapper
+Start off by creating the misc device **/dev/swapper** and attaching it to the **"default"** swapstore. Make sure you can read and write to the **"default"** swapstore before continuing. For this assignment, you can zero out the active swapstore just buffer before each write to keep things simple and looking nice. <br />
+
+You need to worry about the active swapstore being ejected while **/dev/swapper** is attached to it. This could happen at any time since the **root** user is able to to write the name of the active swapstore to **/sys/kernel/debug/swapper/eject** whenever they feel like it with reckless disregard. If the root user's request for ejection were granted immediately, any poor process that attempted to write to **/dev/swapper** would crash the entire system -- **/dev/swapper**'s write fops would try store data into kernel memory it no memory as long as it is attached to **/dev/swapper** However, **root** will expect the specified swapstore to be ejected at some alter point in time once it is no longer attached -  this should happen without root requesting the eject again.
+
+
